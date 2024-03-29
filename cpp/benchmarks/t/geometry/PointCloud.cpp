@@ -69,7 +69,7 @@ void LegacyVoxelDownSample(benchmark::State& state, float voxel_size) {
 void VoxelDownSample(benchmark::State& state,
                      const core::Device& device,
                      float voxel_size,
-                     const core::HashBackendType& backend) {
+                     const std::string& reduction) {
     t::geometry::PointCloud pcd;
     // t::io::CreatePointCloudFromFile lacks support of remove_inf_points and
     // remove_nan_points
@@ -77,10 +77,10 @@ void VoxelDownSample(benchmark::State& state,
     pcd = pcd.To(device);
 
     // Warm up.
-    pcd.VoxelDownSample(voxel_size, backend);
+    pcd.VoxelDownSample(voxel_size, reduction);
 
     for (auto _ : state) {
-        pcd.VoxelDownSample(voxel_size, backend);
+        pcd.VoxelDownSample(voxel_size, reduction);
         core::cuda::Synchronize(device);
     }
 }
@@ -412,6 +412,7 @@ const std::string kReductionMean = "mean";
 #define ENUM_VOXELDOWNSAMPLE_REDUCTION()                  \
     ENUM_VOXELSIZE(core::Device("CPU:0"), kReductionMean) \
     ENUM_VOXELSIZE(core::Device("CUDA:0"), kReductionMean)
+#else
 #define ENUM_VOXELDOWNSAMPLE_REDUCTION() \
     ENUM_VOXELSIZE(core::Device("CPU:0"), kReductionMean)
 #endif
